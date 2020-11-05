@@ -10,13 +10,22 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
 	versionStr   = "prints version"
 	errorStr     = "Error: %s"
-	total_blocks = 100
+	total_blocks = 40
+	bar          = "█"
 )
+
+type State struct {
+	bar         string
+	totalBlocks int
+}
+
+var curState = State{bar: "█"}
 
 func sum(files []os.FileInfo) int {
 	total := 0
@@ -26,6 +35,27 @@ func sum(files []os.FileInfo) int {
 	return total
 }
 
+func shortenString(s string) string {
+	strLength := len([]rune(s))
+	if strLength > 30 {
+		return "..." + s[strLength-30:]
+	}
+	return s
+}
+
+func renderBar(padding int, totalSize int, curSize int) string {
+	width, _, err := terminal.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		width = 80
+	}
+	width -= padding
+
+	fraction := (float64(curSize) / float64(totalSize))
+	barSize := int(fraction * float64(width))
+
+	barString := fmt.Sprintf(strings.Repeat(bar, barSize))
+	return barString
+}
 func ls(pathname string) {
 	files, err := ioutil.ReadDir(pathname)
 	if err != nil {
@@ -40,19 +70,22 @@ func ls(pathname string) {
 		}
 		return files[i].Name() < files[j].Name()
 	})
-	total_size := sum(files)
+	totalSize := sum(files)
 	for _, f := range files {
-		fraction := (float64(f.Size()) / float64(total_size))
-		cur_size := int(fraction * total_blocks)
+		// fraction := (float64(f.Size()) / float64(totalSize))
+		// cur_size := int(fraction * total_blocks)
 		if f.IsDir() {
 			color.Set(color.FgCyan)
 		} else {
 			color.Set(color.FgRed)
 		}
-		fmt.Printf("%-40s %5v %-50s\n", f.Name(), f.Size(), strings.Repeat("█", cur_size))
+		curString := fmt.Sprintf("%-40s %5s|", shortenString(f.Name()), HumanFileSize(int(f.Size())))
+		curLen := len([]rune(curString))
+		curString += renderBar(curLen, totalSize, int(f.Size()))
+		fmt.Println(curString)
 	}
 	color.Unset()
-	fmt.Printf("Total Size: %v\n", total_size)
+	fmt.Printf("Total Size: %v\n", HumanFileSize(totalSize))
 }
 
 func main() {

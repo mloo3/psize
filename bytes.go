@@ -1,4 +1,4 @@
-package fmtbyte
+package main
 
 import "fmt"
 
@@ -9,7 +9,7 @@ const (
 	GIGABYTE
 )
 
-func convert(size int) string {
+func HumanFileSize(size int) string {
 	byteString := ""
 	if size >= GIGABYTE {
 		size /= 10
@@ -23,6 +23,6 @@ func convert(size int) string {
 	} else {
 		byteString = "B"
 	}
-	output := fmt.Sprint("%d%s", size, byteString)
+	output := fmt.Sprintf("%d%s", size, byteString)
 	return output
 }

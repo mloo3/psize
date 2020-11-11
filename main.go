@@ -171,7 +171,7 @@ func ls(c Config) string {
 		}
 		byteString += curString
 	}
-	sizeString := fmt.Sprintf("Total Size: %v\n", HumanFileSize(totalSize))
+	sizeString := fmt.Sprintf("Total Size: %v", HumanFileSize(totalSize))
 	byteString += sizeString
 	return byteString
 }

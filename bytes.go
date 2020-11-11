@@ -23,6 +23,6 @@ func HumanFileSize(size int) string {
 	} else {
 		byteString = "B"
 	}
-	output := fmt.Sprintf("%d%s", size, byteString)
+	output := fmt.Sprintf("%4d%2s", size, byteString)
 	return output
 }

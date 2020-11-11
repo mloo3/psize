@@ -157,9 +157,6 @@ func ls(c Config) string {
 	var curSize int64
 	for _, f := range files[0:min(c.showCount, len(files))] {
 		curSize = f.size
-		if f.isDir {
-			curSize, _ = getDirSize(c, f.name)
-		}
 
 		curString := fmt.Sprintf("%-40s %5s|", shortenString(f.name), HumanFileSize(int(curSize)))
 		curLen := len([]rune(curString))

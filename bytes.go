@@ -10,15 +10,15 @@ const (
 )
 
 func HumanFileSize(size int) string {
-	byteString := ""
+	var byteString string
 	if size >= GIGABYTE {
-		size /= 10
+		size /= GIGABYTE
 		byteString = "G"
 	} else if size >= MEGABYTE {
-		size /= 10
+		size /= MEGABYTE
 		byteString = "M"
 	} else if size >= KILOBYTE {
-		size /= 10
+		size /= KILOBYTE
 		byteString = "K"
 	} else {
 		byteString = "B"

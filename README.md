@@ -16,6 +16,24 @@ go get -u github.com/mloo3/psize
 ```
 psize [flags] [directory]
 ```
-### Example
 
-## Flags
+### Example
+![Example of basic command](examples/basic.png)
+
+### Flags
+Usage of psize:
+```
+  -c int
+    	shows count number of files (default 10)
+  -count int
+    	shows count number of files (default 10)
+  -d	shows size of directories (take longer to run)
+  -dirsize
+    	shows size of directories (take longer to run)
+  -r	shows files in ascending order
+  -reverse
+    	shows files in ascending order
+  -v	prints version
+  -version
+    	prints version
+```

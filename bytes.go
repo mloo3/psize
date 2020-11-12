@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// Sizes of bytes
 const (
 	BYTES = 1 << (10 * iota)
 	KILOBYTE
@@ -9,6 +10,7 @@ const (
 	GIGABYTE
 )
 
+// HumanFileSize returns a readable file size string
 func HumanFileSize(size int) string {
 	var byteString string
 	if size >= GIGABYTE {

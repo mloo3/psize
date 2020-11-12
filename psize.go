@@ -29,6 +29,7 @@ var (
 	yellow = color.New(color.FgYellow).SprintFunc()
 )
 
+// FileInfo allows us to store the nested file size
 type FileInfo struct {
 	name  string
 	size  int64
@@ -36,6 +37,7 @@ type FileInfo struct {
 	path  string
 }
 
+// Config has all the adjustable configurations for psize
 type Config struct {
 	bar       string
 	dirSize   bool

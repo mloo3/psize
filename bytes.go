@@ -11,7 +11,7 @@ const (
 )
 
 // HumanFileSize returns a readable file size string
-func HumanFileSize(size int) string {
+func HumanFileSize(size float32) string {
 	var byteString string
 	if size >= GIGABYTE {
 		size /= GIGABYTE
@@ -25,6 +25,6 @@ func HumanFileSize(size int) string {
 	} else {
 		byteString = "B"
 	}
-	output := fmt.Sprintf("%4d%2s", size, byteString)
+	output := fmt.Sprintf("%7.2f%2s", size, byteString)
 	return output
 }

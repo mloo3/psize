@@ -7,17 +7,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
+	"os/user"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/fatih/color"
+	"github.com/karrick/godirwalk"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
 	countStr   = "shows count number of files"
-	dirStr     = "shows size of directories (take longer to run)"
+	dirStr     = "do not shows size of directories"
 	errorStr   = "Error: %s"
 	reverseStr = "shows files in ascending order"
 	versionStr = "prints version"
@@ -55,7 +57,7 @@ func defaultConfigs() Config {
 	}
 
 	config := Config{bar: "█",
-		dirSize:   false,
+		dirSize:   true,
 		pathname:  "./",
 		reverse:   false,
 		showCount: 10,
@@ -90,14 +92,17 @@ func shortenString(s string) string {
 
 func getDirSize(c Config, path string) (int64, error) {
 	var size int64
-	err := filepath.Walk(c.pathname+path, func(_ string, info os.FileInfo, err error) error {
-		if err != nil {
+	err := godirwalk.Walk(c.pathname+path, &godirwalk.Options{
+		Callback: func(osPathname string, de *godirwalk.Dirent) error {
+			st, err := os.Stat(osPathname)
+			if err != nil {
+				return err
+			}
+			if !de.IsDir() {
+				size += st.Size()
+			}
 			return err
-		}
-		if !info.IsDir() {
-			size += info.Size()
-		}
-		return err
+		},
 	})
 	return size, err
 }
@@ -114,15 +119,26 @@ func renderBar(c Config, padding int, totalSize int, curSize int) string {
 
 func populateFiles(c Config, files []os.FileInfo) []FileInfo {
 	retFiles := make([]FileInfo, len(files))
+
+	wg := sync.WaitGroup{}
+
 	for i, f := range files {
 		retFiles[i].name = f.Name()
 		if c.dirSize {
-			retFiles[i].size, _ = getDirSize(c, f.Name())
+			wg.Add(1)
+			go func(i int) {
+				retFiles[i].size, _ = getDirSize(c, files[i].Name())
+				wg.Done()
+			}(i)
 		} else {
 			retFiles[i].size = f.Size()
 		}
 		retFiles[i].isDir = f.IsDir()
 	}
+	wg.Wait()
+	// for i := 0; i < len(files); i++ {
+	// 	fmt.Println(retFiles[i].size)
+	// }
 	return retFiles
 }
 
@@ -160,7 +176,7 @@ func ls(c Config) string {
 	for _, f := range files[0:min(c.showCount, len(files))] {
 		curSize = f.size
 
-		curString := fmt.Sprintf("%-40s %5s|", shortenString(f.name), HumanFileSize(int(curSize)))
+		curString := fmt.Sprintf("%-40s %5s|", shortenString(f.name), HumanFileSize(float32(curSize)))
 		curLen := len([]rune(curString))
 		curString += renderBar(c, curLen, totalSize, int(f.size)) + "\n"
 		if f.isDir {
@@ -170,7 +186,7 @@ func ls(c Config) string {
 		}
 		byteString += curString
 	}
-	sizeString := fmt.Sprintf("Total Size: %v", HumanFileSize(totalSize))
+	sizeString := fmt.Sprintf("Total Size: %v", HumanFileSize(float32(totalSize)))
 	byteString += sizeString
 	return byteString
 }
@@ -198,11 +214,16 @@ func main() {
 		byteString = "dsize v 1.0.0"
 	} else {
 		if *dirSize {
-			config.dirSize = true
+			config.dirSize = false
 		}
 		if path := flag.Arg(0); path != "" {
 			if !strings.HasSuffix(path, "/") {
 				path += "/"
+			}
+			if strings.HasPrefix(path, "~/") {
+				usr, _ := user.Current()
+				dir := usr.HomeDir
+				path = dir
 			}
 			config.pathname = path
 		}

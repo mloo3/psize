@@ -124,21 +124,19 @@ func populateFiles(c Config, files []os.FileInfo) []FileInfo {
 
 	for i, f := range files {
 		retFiles[i].name = f.Name()
+		retFiles[i].size = f.Size()
 		if c.dirSize {
-			wg.Add(1)
-			go func(i int) {
-				retFiles[i].size, _ = getDirSize(c, files[i].Name())
-				wg.Done()
-			}(i)
-		} else {
-			retFiles[i].size = f.Size()
+			if f.IsDir() {
+				wg.Add(1)
+				go func(i int) {
+					retFiles[i].size, _ = getDirSize(c, files[i].Name())
+					wg.Done()
+				}(i)
+			}
 		}
 		retFiles[i].isDir = f.IsDir()
 	}
 	wg.Wait()
-	// for i := 0; i < len(files); i++ {
-	// 	fmt.Println(retFiles[i].size)
-	// }
 	return retFiles
 }
 

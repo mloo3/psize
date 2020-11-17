@@ -27,9 +27,9 @@ Usage of psize:
     	shows count number of files (default 10)
   -count int
     	shows count number of files (default 10)
-  -d	shows size of directories (take longer to run)
+  -d	do not shows size of directories
   -dirsize
-    	shows size of directories (take longer to run)
+    	do not shows size of directories
   -r	shows files in ascending order
   -reverse
     	shows files in ascending order
